@@ -1,0 +1,32 @@
+---
+
+- name: Django | Stat media folder
+  stat:
+    path: '{{ MEDIA_ROOT }}'
+  register: media_d
+  become: true
+  become_user: '{{ DEFAULT_USER }}'
+
+# Удалим старую папку с media
+- name: Django | Remove old media dir
+  shell: 'rm -rf {{ MEDIA_ROOT }}'
+  become: true
+  when: DROP_DATABASE|default(true)|bool == true
+
+- name: Django | Stat media folder (after the removing)
+  stat:
+    path: '{{ MEDIA_ROOT }}'
+  register: media_d
+  become: true
+  become_user: '{{ DEFAULT_USER }}'
+  when: DROP_DATABASE|default(true)|bool == true
+
+# Создадим папку с media
+- name: Django | Create media dir
+  file:
+    path: '{{ MEDIA_ROOT }}'
+    state: directory
+    mode: 0755
+  become: true
+  become_user: '{{ DEFAULT_USER }}'
+  when: not media_d.stat.exists

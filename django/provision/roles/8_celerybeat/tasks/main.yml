@@ -1,0 +1,59 @@
+---
+
+- stat:
+    path: '{{ CELERY_BEAT_BACKEND_PID_DIR }}'
+  register: pid_d
+  become: true
+
+- stat:
+    path: '{{ CELERY_BEAT_BACKEND_LOG_DIR }}'
+  register: log_d
+  become: true
+
+# Создадим директорию под .pid файлы
+- name: Celery beat | Install | create pid files directory
+  become: true
+  become_user: '{{ DEFAULT_USER }}'
+  file:
+    path: '{{ CELERY_BEAT_BACKEND_PID_DIR }}'
+    state: directory
+  when: not pid_d.stat.exists
+
+# Создадим директорию под .log файлы
+- name: Celery beat | Install | create log files directory
+  become: true
+  become_user: '{{ DEFAULT_USER }}'
+  file:
+    path: '{{ CELERY_BEAT_BACKEND_LOG_DIR }}'
+    state: directory
+  when: not log_d.stat.exists
+
+# Загрузим celery_beat_tmpfiles.conf
+- name: Celery beat | Load celery_beat_tmpfiles.conf
+  template:
+    src: 'celery_beat_tmpfiles.conf'
+    dest: '/etc/tmpfiles.d/celery_beat.conf'
+  become: true
+
+# Загрузим celery_beat_rotate.conf
+- name: Celery beat | Load celery_beat_rotate.conf
+  template:
+    src: 'celery_beat_rotate.conf'
+    dest: '/etc/logrotate.d/celery_beat_rotate'
+  become: true
+
+# Загрузим celery_beat.service
+- name: Celery beat | Load celery_beat.service
+  template:
+    src: 'celery_beat.service'
+    dest: '/etc/systemd/system/celery_beat.service'
+  become: true
+
+# Перезапустим Celery
+- name: Celery beat | Restart service
+  systemd:
+    name: 'celery_beat'
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  become: true

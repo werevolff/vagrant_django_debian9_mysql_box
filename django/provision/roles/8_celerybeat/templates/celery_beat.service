@@ -1,0 +1,21 @@
+[Unit]
+Description=Celery Beat Service
+After=network.target
+
+[Service]
+Type=forking
+User={{ DEFAULT_USER }}
+Group={{ DEFAULT_USER }}
+WorkingDirectory={{ BACKEND_PATH }}
+EnvironmentFile={{ BACKEND_ENV_PATH }}
+ExecStart=/bin/sh -c '{{ VENV_PATH }}/bin/celery multi start beatworker1 -B \
+    -A ${MAIN_APP_NAME} --pidfile=${CELERY_BEAT_BACKEND_PID_DIR}/celerybeat.pid --statedb=/home/{{ DEFAULT_USER }}/%n.state\
+  --logfile=${CELERY_BEAT_BACKEND_LOG_DIR}/celerybeat.log --loglevel=${CELERYD_LOG_LEVEL} ${CELERYD_OPTS}'
+ExecStop=/bin/sh -c '{{ VENV_PATH }}/bin/celery multi stopwait beatworker1 \
+  --pidfile=${CELERY_BEAT_BACKEND_PID_DIR}/celerybeat.pid'
+ExecReload=/bin/sh -c '{{ VENV_PATH }}/bin/celery multi start beatworker1 -B \
+    -A ${MAIN_APP_NAME} --pidfile=${CELERY_BEAT_BACKEND_PID_DIR}/celerybeat.pid --statedb=/home/{{ DEFAULT_USER }}/%n.state\
+  --logfile=${CELERY_BEAT_BACKEND_LOG_DIR}/celerybeat.log --loglevel=${CELERYD_LOG_LEVEL} ${CELERYD_OPTS}'
+
+[Install]
+WantedBy=multi-user.target

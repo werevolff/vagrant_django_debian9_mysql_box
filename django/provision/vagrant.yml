@@ -1,0 +1,13 @@
+---
+
+- hosts: local
+  gather_facts: true
+  roles:
+    - 1_pyenv
+    - 2_virtualenv
+    - 3_django
+    - 4_postgresql
+    - 5_gunicorn
+    - 6_rabbitmq
+    - 7_celery
+    - 8_celerybeat

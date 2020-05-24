@@ -1,0 +1,46 @@
+---
+
+# Обновим список пакетов
+- name: Postgresql | Install | apt-get update
+  become: true
+  apt:
+    update_cache: yes
+    cache_valid_time: 60
+
+# Установим gnupg2
+- name: Postgresql | Install | install gnupg2
+  become: true
+  apt:
+    pkg: '{{ item }}'
+    state: present
+  with_items:
+    - gnupg2
+
+# Добавим ключи для репозитория
+- name: Postgresql | Install | add key
+  become: true
+  apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state: present
+
+# Добавим репозиторий
+- name: Postgresql | Install | add repository
+  become: true
+  shell: 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" | sudo tee  /etc/apt/sources.list.d/pgdg.list'
+
+# Обновим список пакетов
+- name: Postgresql | Install | apt-get update
+  become: true
+  apt:
+    update_cache: yes
+
+# Установим требуемые пакеты
+- name: Postgresql | Install | install packages
+  become: true
+  apt:
+    pkg: '{{ item }}'
+    state: present
+  with_items:
+    - 'postgresql-{{ PG_VERSION }}'
+    - 'postgresql-client-{{ PG_VERSION }}'
+    - 'postgresql-contrib-{{ PG_VERSION }}'

@@ -1,0 +1,6 @@
+[project-hosts]
+
+localhost   ansible_connection=local
+
+[local]
+localhost

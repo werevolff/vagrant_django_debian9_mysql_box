@@ -1,0 +1,31 @@
+---
+
+# Создадим RabbitMQ vhost
+- name: RabbitMQ | Create RabbitMQ vhost for project
+  rabbitmq_vhost:
+    name: '{{ RABBITMQ_VHOST }}'
+    state: present
+    node: rabbit@localhost
+  become: true
+
+# Удалим RabbitMQ user
+- name: RabbitMQ | Delete RabbitMQ user for project
+  rabbitmq_user:
+    user: '{{ RABBITMQ_USER }}'
+    state: absent
+    node: rabbit@localhost
+  become: true
+
+# Создадим RabbitMQ user
+- name: RabbitMQ | Create RabbitMQ user for project
+  rabbitmq_user:
+    user: '{{ RABBITMQ_USER }}'
+    password: '{{ RABBITMQ_PASSWORD }}'
+    permissions:
+      - vhost: '{{ RABBITMQ_VHOST }}'
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+    state: present
+    node: rabbit@localhost
+  become: true

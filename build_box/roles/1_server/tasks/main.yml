@@ -1,0 +1,41 @@
+---
+
+# Установим требуемые пакеты
+- name: Server | Install | install packages
+  become: true
+  apt: pkg={{ item }} state=present
+  with_items:
+    - locales-all
+
+# Выберем локаль по-умолчанию
+- name: Server | Main | select default locale
+  debconf:
+    name: locales
+    question: locales/default_environment_locale
+    value: ru_RU.UTF-8
+    vtype: select
+  become: true
+
+# Выберем локали для генерации
+- name: Server | Main | select locales to gen
+  debconf:
+    name: locales
+    question: locales/locales_to_be_generated
+    value: en_US.UTF-8 UTF-8, ru_RU.UTF-8 UTF-8
+    vtype: multiselect
+  become: true
+
+# Реконфигурируем систему
+- name: Server | Main | reconfigure DPKG
+  shell: dpkg-reconfigure -f noninteractive locales
+  become: true
+
+# Сгенерируем локаль
+- name: Server | Main | generate locale
+  shell: locale-gen --purge ru_RU.UTF-8
+  become: true
+
+# Установим локаль
+- name: Server | Main | update locale
+  shell: update-locale LC_ALL=ru_RU.UTF-8
+  become: true

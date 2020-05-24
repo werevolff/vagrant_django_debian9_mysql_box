@@ -1,0 +1,21 @@
+[Unit]
+Description=Celery Service
+After=network.target
+
+[Service]
+Type=forking
+User={{ DEFAULT_USER }}
+Group={{ DEFAULT_USER }}
+WorkingDirectory={{ BACKEND_PATH }}
+EnvironmentFile={{ BACKEND_ENV_PATH }}
+ExecStart=/bin/sh -c '{{ VENV_PATH }}/bin/celery multi start ${CELERYD_NODES} \
+  -A ${MAIN_APP_NAME} --pidfile=${CELERY_BACKEND_PID_DIR}/celeryd.pid \
+  --logfile=${CELERY_BACKEND_LOG_DIR}/celeryd.log --loglevel=${CELERYD_LOG_LEVEL} ${CELERYD_OPTS}'
+ExecStop=/bin/sh -c '{{ VENV_PATH }}/bin/celery multi stopwait ${CELERYD_NODES} \
+  --pidfile=${CELERYD_PID_FILE}'
+ExecReload=/bin/sh -c '{{ VENV_PATH }}/bin/celery multi restart ${CELERYD_NODES} \
+  -A ${MAIN_APP_NAME} --pidfile=${CELERY_BACKEND_PID_DIR}/celeryd.pid \
+  --logfile=${CELERY_BACKEND_LOG_DIR}/celeryd.log --loglevel=${CELERYD_LOG_LEVEL} ${CELERYD_OPTS}'
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,41 @@
+---
+
+- stat:
+    path: '{{ VENV_PATH }}'
+  register: venv_p
+  become: true
+  become_user: '{{ DEFAULT_USER }}'
+
+# Остановим сервисы, использующие virtualenv
+- name: Virtualenv | Stop services
+  systemd:
+    name: '{{ item }}'
+    state: stopped
+    enabled: yes
+    daemon_reload: yes
+  become: true
+  with_items:
+    - 'celery'
+    - 'celery_beat'
+    - 'gunicorn'
+  ignore_errors: yes
+
+# Удалим старую virtualenv
+- name: Virtualenv | Remove old virtualenv dir
+  shell: 'rm -rf {{ VENV_PATH }}'
+  when: venv_p.stat.exists
+  become: true
+
+# Создадим virtualenv
+- name: Virtualenv | Create virtualenv
+  shell: '{{ PYENV_ROOT }}/versions/{{ PYTHON_PROJECT_VERSION }}/bin/virtualenv -p {{ PYENV_ROOT }}/versions/{{ PYTHON_PROJECT_VERSION }}/bin/python {{ VENV_PATH }}'
+  become: true
+  become_user: '{{ DEFAULT_USER }}'
+
+# Установим зависимости
+- name: Virtualenv | Install pip requirements
+  pip:
+    requirements: '{{ REQUIREMENTS_PATH }}'
+    virtualenv: '{{ VENV_PATH }}'
+  become: true
+  become_user: '{{ DEFAULT_USER }}'

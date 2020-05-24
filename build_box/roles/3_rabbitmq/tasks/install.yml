@@ -1,0 +1,95 @@
+---
+
+# Обновим список пакетов
+- name: RabbitMQ | Install | apt-get update
+  become: true
+  apt:
+    update_cache: yes
+    cache_valid_time: 60
+    
+# Установим gnupg2
+- name: RabbitMQ | Install | install gnupg2
+  become: true
+  apt:
+    pkg: '{{ item }}'
+    state: present
+  with_items:
+    - gnupg2
+
+# Добавим ключи для репозитория
+- name: RabbitMQ | Install | add key
+  become: true
+  apt_key:
+    url: https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc
+    state: present
+
+# Установим apt-transport-https
+- name: RabbitMQ | Install | install apt-transport-https
+  become: true
+  apt:
+    pkg: '{{ item }}'
+    state: present
+  with_items:
+    - apt-transport-https
+
+# Добавим репозиторий rabbitmq-erlang
+- name: RabbitMQ | Install | add rabbitmq-erlang repository
+  become: true
+  shell: 'echo "deb http://dl.bintray.com/rabbitmq-erlang/debian stretch erlang-21.x" | sudo tee  /etc/apt/sources.list.d/bintray.rabbitmq-erlang.list'
+
+# Добавим репозиторий rabbitmq
+- name: RabbitMQ | Install | add rabbitmq repository
+  become: true
+  shell: 'echo "deb http://dl.bintray.com/rabbitmq/debian stretch main" | sudo tee  /etc/apt/sources.list.d/bintray.rabbitmq.list'
+
+# Обновим список пакетов
+- name: RabbitMQ | Install | apt-get update
+  become: true
+  apt:
+    update_cache: yes
+
+- stat:
+    path: '/etc/rabbitmq'
+  register: rabbit_d
+  become: true
+
+# Создадим директорию /etc/rabbitmq
+- name: RabbitMQ | Install | create /etc/rabbitmq directory
+  become: true
+  file:
+    path: '/etc/rabbitmq'
+    state: directory
+  when: not rabbit_d.stat.exists
+
+# Загрузим ENV для rabbitmq
+- name: RabbitMQ | Install | load rabbitmq-env.conf
+  become: true
+  template:
+    src: 'rabbitmq-env.conf'
+    dest: '/etc/rabbitmq/rabbitmq-env.conf'
+
+# Установим RabbitMQ
+- name: RabbitMQ | Install | install RabbitMQ
+  become: true
+  apt:
+    pkg: '{{ item }}'
+    state: present
+  with_items:
+    - erlang-base
+    - erlang-asn1
+    - erlang-crypto
+    - erlang-eldap
+    - erlang-ftp
+    - erlang-inets
+    - erlang-mnesia
+    - erlang-os-mon
+    - erlang-parsetools
+    - erlang-public-key
+    - erlang-runtime-tools
+    - erlang-snmp
+    - erlang-ssl
+    - erlang-syntax-tools
+    - erlang-tftp
+    - erlang-tools
+    - erlang-xmerl
+    - rabbitmq-server

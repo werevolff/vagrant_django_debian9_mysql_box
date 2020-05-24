@@ -1,0 +1,9 @@
+---
+
+- hosts: local
+  gather_facts: true
+  roles:
+    - 1_server
+    - 2_postgresql
+    - 3_rabbitmq
+    - 4_redis

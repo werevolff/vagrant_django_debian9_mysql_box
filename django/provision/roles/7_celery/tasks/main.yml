@@ -1,0 +1,59 @@
+---
+
+- stat:
+    path: '{{ CELERY_BACKEND_PID_DIR }}'
+  register: pid_d
+  become: true
+
+- stat:
+    path: '{{ CELERY_BACKEND_LOG_DIR }}'
+  register: log_d
+  become: true
+
+# Создадим директорию под .pid файлы
+- name: Celery | Install | create pid files directory
+  become: true
+  become_user: '{{ DEFAULT_USER }}'
+  file:
+    path: '{{ CELERY_BACKEND_PID_DIR }}'
+    state: directory
+  when: not pid_d.stat.exists
+
+# Создадим директорию под .log файлы
+- name: Celery | Install | create log files directory
+  become: true
+  become_user: '{{ DEFAULT_USER }}'
+  file:
+    path: '{{ CELERY_BACKEND_LOG_DIR }}'
+    state: directory
+  when: not log_d.stat.exists
+
+# Загрузим celery_tmpfiles.conf
+- name: Celery | Load celery_tmpfiles.conf
+  template:
+    src: 'celery_tmpfiles.conf'
+    dest: '/etc/tmpfiles.d/celery.conf'
+  become: true
+
+# Загрузим celery_rotate.conf
+- name: Celery | Load celery_rotate.conf
+  template:
+    src: 'celery_rotate.conf'
+    dest: '/etc/logrotate.d/celery_rotate'
+  become: true
+
+# Загрузим celery.service
+- name: Celery | Load celery.service
+  template:
+    src: 'celery.service'
+    dest: '/etc/systemd/system/celery.service'
+  become: true
+
+# Перезапустим Celery
+- name: Celery | Restart service
+  systemd:
+    name: 'celery'
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  become: true

@@ -1,0 +1,31 @@
+---
+
+- stat:
+    path: '{{ PYENV_ROOT }}/versions/{{ PYTHON_PROJECT_VERSION }}'
+  register: python_bin_path
+  become: true
+  become_user: '{{ DEFAULT_USER }}'
+
+# Установим версию Python для проекта
+- name: Pyenv | Install required python version
+  shell: '{{ PYENV_ROOT }}/bin/pyenv install {{ PYTHON_PROJECT_VERSION }}'
+  become: true
+  become_user: '{{ DEFAULT_USER }}'
+  when: not python_bin_path.stat.exists
+
+# Установим последнюю версию Pip
+- name: Pyenv | Upgrade pip
+  pip:
+    name: pip
+    state: latest
+    executable: '{{ PYENV_ROOT }}/versions/{{ PYTHON_PROJECT_VERSION }}/bin/pip'
+  become: true
+  become_user: '{{ DEFAULT_USER }}'
+
+# Установим virtualenv
+- name: Pyenv | Install virtualenv
+  pip:
+    name: virtualenv
+    executable: '{{ PYENV_ROOT }}/versions/{{ PYTHON_PROJECT_VERSION }}/bin/pip'
+  become: true
+  become_user: '{{ DEFAULT_USER }}'

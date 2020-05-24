@@ -1,0 +1,57 @@
+---
+
+- stat:
+    path: '{{ GUNICORN_BACKEND_PID_DIR }}'
+  register: pid_d
+  become: true
+
+- stat:
+    path: '{{ GUNICORN_BACKEND_LOG_DIR }}'
+  register: log_d
+  become: true
+
+# Создадим директорию под .pid файлы
+- name: Gunicorn | Install | create pid files directory
+  become: true
+  file:
+    path: '{{ GUNICORN_BACKEND_PID_DIR }}'
+    state: directory
+  when: not pid_d.stat.exists
+
+# Создадим директорию под .log файлы
+- name: Gunicorn | Install | create log files directory
+  become: true
+  file:
+    path: '{{ GUNICORN_BACKEND_LOG_DIR }}'
+    state: directory
+  when: not log_d.stat.exists
+
+# Load gunicorn.service
+- name: Gunicorn | Load gunicorn.service
+  template:
+    src: 'gunicorn.service'
+    dest: '/etc/systemd/system/gunicorn.service'
+  become: true
+
+# Load gunicorn.socket
+- name: Gunicorn | Load gunicorn.socket
+  template:
+    src: 'gunicorn.socket'
+    dest: '/etc/systemd/system/gunicorn.socket'
+  become: true
+
+# Load gunicorn.conf
+- name: Gunicorn | Load gunicorn.conf
+  template:
+    src: 'gunicorn.conf'
+    dest: '/usr/lib/tmpfiles.d/gunicorn.conf'
+  become: true
+
+# Перезапустим Gunicorn
+- name: Gunicorn | Restart service
+  systemd:
+    name: 'gunicorn'
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  become: true

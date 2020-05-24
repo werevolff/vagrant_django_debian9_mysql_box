@@ -49,11 +49,11 @@ Vagrant.configure(2) do |config|
         django_debian9_mysql.vm.network "private_network", ip: ENV['PRIVATE_NETWORK_IP']
         django_debian9_mysql.vm.network "forwarded_port", guest: ENV['SSH_PORT_GUEST'], host: ENV['SSH_PORT_HOST'], id: "ssh"
 
-        #django_debian9_mysql.vm.provision "django_debian9", type: "shell" do |shell|
-        #    shell.path = "build_box/install_ansible.sh"
-        #    shell.privileged = false
-        #    shell.keep_color = true
-        #end
+        django_debian9_mysql.vm.provision "django_debian9", type: "shell" do |shell|
+            shell.path = "build_box/install_ansible.sh"
+            shell.privileged = false
+            shell.keep_color = true
+        end
 
         ansible_base_vars = {
             MYSQL_ROOT_PASSWORD: ENV['MYSQL_ROOT_PASSWORD'],
@@ -85,15 +85,15 @@ Vagrant.configure(2) do |config|
             CELERY_BEAT_BACKEND_LOG_DIR: ENV['CELERY_BEAT_BACKEND_LOG_DIR'],
         }
 
-        #django_debian9_mysql.vm.provision "ansible_local" do |ansible_build_box|
-        #    ansible_build_box.inventory_path      = './build_box/hosts'
-        #    ansible_build_box.limit               = 'local'
-        #    ansible_build_box.playbook            = 'build_box/vagrant.yml'
-        #    ansible_build_box.verbose             = 'vvvv'
-        #    ansible_build_box.config_file         = 'ansible.cfg'
-        #    ansible_build_box.raw_arguments       = ['-e ansible_python_interpreter=/usr/bin/python3']
-        #    ansible_build_box.extra_vars          = ansible_base_vars
-        #end
+        django_debian9_mysql.vm.provision "ansible_local" do |ansible_build_box|
+            ansible_build_box.inventory_path      = './build_box/hosts'
+            ansible_build_box.limit               = 'local'
+            ansible_build_box.playbook            = 'build_box/vagrant.yml'
+            ansible_build_box.verbose             = 'vvvv'
+            ansible_build_box.config_file         = 'ansible.cfg'
+            ansible_build_box.raw_arguments       = ['-e ansible_python_interpreter=/usr/bin/python3']
+            ansible_build_box.extra_vars          = ansible_base_vars
+        end
 
         if ENV['RUN_DJANGO_PROJECT'] == 'true'
             django_debian9_mysql.vm.provision "ansible_local" do |ansible_provision|

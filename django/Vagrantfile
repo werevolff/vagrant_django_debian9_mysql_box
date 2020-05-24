@@ -50,7 +50,7 @@ Vagrant.configure(2) do |config|
         project.vm.network "forwarded_port", guest: ENV['SSH_PORT_GUEST'], host: ENV['SSH_PORT_HOST'], id: "ssh"
 
         ansible_base_vars = {
-            PG_VERSION: ENV['PG_VERSION'],
+            MYSQL_ROOT_PASSWORD: ENV['MYSQL_ROOT_PASSWORD'],
             PYENV_ROOT: ENV['PYENV_ROOT'],
             PYTHON_SYSTEM_VERSION: ENV['PYTHON_SYSTEM_VERSION'],
             DEFAULT_USER: ENV['DEFAULT_USER'],

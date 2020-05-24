@@ -1,0 +1,74 @@
+---
+
+# Обновим список пакетов
+- name: MySQL | Install | apt-get update
+  become: true
+  apt:
+    update_cache: yes
+    cache_valid_time: 60
+
+# Установим requirements
+- name: MySQL | Install | install requierements
+  become: true
+  apt:
+    pkg: '{{ item }}'
+    state: present
+  with_items:
+    - gnupg2
+    - dirmngr
+    - debconf
+
+# Добавим ключи для репозитория
+- name: MySQL | Install | add key
+  become: true
+  apt_key:
+    keyserver: pool.sks-keyservers.net
+    id: 5072E1F5
+    state: present
+
+# Добавим репозиторий
+- name: MySQL | Install | add repository
+  become: true
+  apt_repository:
+    repo: deb http://repo.mysql.com/apt/debian/ stretch mysql-8.0
+    filename: mysql80
+    state: present
+
+# Установим root password для MySQL
+- name: MySQL | Install | Set MySQL root password
+  become: true
+  debconf:
+    name: mysql-community-server
+    question: mysql-community-server/root-pass
+    value: '{{ MYSQL_ROOT_PASSWORD }}'
+    vtype: password
+
+# Установим подтверждение root password для MySQL
+- name: Confirm MySQL root password
+  become: true
+  debconf:
+    name: mysql-community-server
+    question: mysql-community-server/re-root-pass
+    value: '{{ MYSQL_ROOT_PASSWORD }}'
+    vtype: password
+
+# Установим Legacy Authentication Method
+- name: Enable Legacy Authentication Method
+  become: true
+  debconf:
+    name: mysql-community-server
+    question: mysql-server/default-auth-override
+    value: 'Use Legacy Authentication Method (Retain MySQL 5.x Compatibility)'
+    vtype: select
+
+# Установим требуемые пакеты
+- name: MySQL | Install | install packages
+  become: true
+  apt:
+    pkg: '{{ item }}'
+    state: present
+    update_cache: yes
+  with_items:
+    - 'mysql-server'
+  environment:
+    DEBIAN_FRONTEND: noninteractive

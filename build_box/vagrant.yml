@@ -4,6 +4,6 @@
   gather_facts: true
   roles:
     - 1_server
-    - 2_postgresql
+    - 2_mysql
     - 3_rabbitmq
     - 4_redis

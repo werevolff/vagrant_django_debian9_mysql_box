@@ -44,19 +44,19 @@ Vagrant.configure(2) do |config|
         vb.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/vagrant", "1"]
     end
 
-    config.vm.define "django_debian9", primary: true, autorestart: false do |django_debian9_mysql|
-        django_debian9.vm.box = "generic/debian9"
-        django_debian9.vm.network "private_network", ip: ENV['PRIVATE_NETWORK_IP']
-        django_debian9.vm.network "forwarded_port", guest: ENV['SSH_PORT_GUEST'], host: ENV['SSH_PORT_HOST'], id: "ssh"
+    config.vm.define "django_debian9_mysql", primary: true, autorestart: false do |django_debian9_mysql|
+        django_debian9_mysql.vm.box = "generic/debian9"
+        django_debian9_mysql.vm.network "private_network", ip: ENV['PRIVATE_NETWORK_IP']
+        django_debian9_mysql.vm.network "forwarded_port", guest: ENV['SSH_PORT_GUEST'], host: ENV['SSH_PORT_HOST'], id: "ssh"
 
-        django_debian9.vm.provision "django_debian9", type: "shell" do |shell|
-            shell.path = "build_box/install_ansible.sh"
-            shell.privileged = false
-            shell.keep_color = true
-        end
+        #django_debian9_mysql.vm.provision "django_debian9", type: "shell" do |shell|
+        #    shell.path = "build_box/install_ansible.sh"
+        #    shell.privileged = false
+        #    shell.keep_color = true
+        #end
 
         ansible_base_vars = {
-            PG_VERSION: ENV['PG_VERSION'],
+            MYSQL_ROOT_PASSWORD: ENV['MYSQL_ROOT_PASSWORD'],
             PYENV_ROOT: ENV['PYENV_ROOT'],
             PYTHON_SYSTEM_VERSION: ENV['PYTHON_SYSTEM_VERSION'],
             DEFAULT_USER: ENV['DEFAULT_USER'],
@@ -85,7 +85,7 @@ Vagrant.configure(2) do |config|
             CELERY_BEAT_BACKEND_LOG_DIR: ENV['CELERY_BEAT_BACKEND_LOG_DIR'],
         }
 
-        django_debian9.vm.provision "ansible_local" do |ansible_build_box|
+        django_debian9_mysql.vm.provision "ansible_local" do |ansible_build_box|
             ansible_build_box.inventory_path      = './build_box/hosts'
             ansible_build_box.limit               = 'local'
             ansible_build_box.playbook            = 'build_box/vagrant.yml'
@@ -96,7 +96,7 @@ Vagrant.configure(2) do |config|
         end
 
         if ENV['RUN_DJANGO_PROJECT'] == 'true'
-            django_debian9.vm.provision "ansible_local" do |ansible_provision|
+            django_debian9_mysql.vm.provision "ansible_local" do |ansible_provision|
                 ansible_provision.inventory_path      = './build_box/hosts'
                 ansible_provision.limit               = 'local'
                 ansible_provision.playbook            = 'django/provision/vagrant.yml'
@@ -107,6 +107,6 @@ Vagrant.configure(2) do |config|
             end
         end
 
-        django_debian9.vm.box_check_update = true
+        django_debian9_mysql.vm.box_check_update = true
     end
 end

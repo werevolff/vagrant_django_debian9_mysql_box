@@ -71,9 +71,9 @@ Vagrant.configure(2) do |config|
             MAIN_APP_NAME: ENV['MAIN_APP_NAME'],
             GUNICORN_BIND: ENV['GUNICORN_BIND'],
             DROP_DATABASE: ENV['DROP_DATABASE'],
-            POSTGRES_DB: ENV['POSTGRES_DB'],
-            POSTGRES_USER: ENV['POSTGRES_USER'],
-            POSTGRES_PASSWORD: ENV['POSTGRES_PASSWORD'],
+            MYSQL_DB: ENV['MYSQL_DB'],
+            MYSQL_USER: ENV['MYSQL_USER'],
+            MYSQL_PASSWORD: ENV['MYSQL_PASSWORD'],
             MEDIA_ROOT: ENV['MEDIA_ROOT'],
             CELERY_BACKEND_PID_DIR: ENV['CELERY_BACKEND_PID_DIR'],
             CELERY_BACKEND_LOG_DIR: ENV['CELERY_BACKEND_LOG_DIR'],
@@ -85,15 +85,15 @@ Vagrant.configure(2) do |config|
             CELERY_BEAT_BACKEND_LOG_DIR: ENV['CELERY_BEAT_BACKEND_LOG_DIR'],
         }
 
-        django_debian9_mysql.vm.provision "ansible_local" do |ansible_build_box|
-            ansible_build_box.inventory_path      = './build_box/hosts'
-            ansible_build_box.limit               = 'local'
-            ansible_build_box.playbook            = 'build_box/vagrant.yml'
-            ansible_build_box.verbose             = 'vvvv'
-            ansible_build_box.config_file         = 'ansible.cfg'
-            ansible_build_box.raw_arguments       = ['-e ansible_python_interpreter=/usr/bin/python3']
-            ansible_build_box.extra_vars          = ansible_base_vars
-        end
+        #django_debian9_mysql.vm.provision "ansible_local" do |ansible_build_box|
+        #    ansible_build_box.inventory_path      = './build_box/hosts'
+        #    ansible_build_box.limit               = 'local'
+        #    ansible_build_box.playbook            = 'build_box/vagrant.yml'
+        #    ansible_build_box.verbose             = 'vvvv'
+        #    ansible_build_box.config_file         = 'ansible.cfg'
+        #    ansible_build_box.raw_arguments       = ['-e ansible_python_interpreter=/usr/bin/python3']
+        #    ansible_build_box.extra_vars          = ansible_base_vars
+        #end
 
         if ENV['RUN_DJANGO_PROJECT'] == 'true'
             django_debian9_mysql.vm.provision "ansible_local" do |ansible_provision|

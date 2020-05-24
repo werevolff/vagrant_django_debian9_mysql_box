@@ -4,9 +4,9 @@
   gather_facts: true
   roles:
     - 1_pyenv
-    - 2_virtualenv
-    - 3_django
-    - 4_postgresql
+    - 2_mysql
+    - 3_virtualenv
+    - 4_django
     - 5_gunicorn
     - 6_rabbitmq
     - 7_celery

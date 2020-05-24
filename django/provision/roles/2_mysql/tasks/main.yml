@@ -1,0 +1,41 @@
+---
+
+# Обновим список пакетов
+- name: MySQL | apt-get update
+  become: true
+  apt:
+    update_cache: yes
+    cache_valid_time: 60
+
+# Установим libraries
+- name: MySQL | install mysql libraries
+  become: true
+  apt:
+    pkg: '{{ item }}'
+    state: present
+  with_items:
+    - libmysqlclient-dev
+    - python3-pymysql
+
+# Загрузим файл prepare_db.sql
+- name: MySQL | Load prepare_db.sql
+  template:
+    src: 'prepare_db.sql'
+    dest: '/home/{{ DEFAULT_USER }}/prepare_db.sql'
+  become: true
+  become_user: '{{ DEFAULT_USER }}'
+
+# Выполним файл prepare_db.sql
+- name: MySQL | Apply prepare_db.sql
+  shell: 'mysql < /home/{{ DEFAULT_USER }}/prepare_db.sql'
+  become: true
+  become_user: '{{ DEFAULT_USER }}'
+
+# Перезапустим postgresql
+- name: MySQL | Restart service
+  systemd:
+    name: 'mysql'
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  become: true
